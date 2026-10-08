@@ -1,0 +1,985 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="robots" content="noindex, nofollow" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Argus Gibraltar — Life, covered.</title>
+<meta name="description" content="An independent design study for Argus Gibraltar. Explore insurance for your home, car, business and travels, with local support in Gibraltar." />
+<link rel="icon" type="image/png" href="./argus-logo.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,200..800&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400;1,6..72,500&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg-pulp:#EFEAD8;
+    --bg-ink:#0B1B2B;
+    --text-ink:#0B1B2B;
+    --text-pulp:#EFEAD8;
+    --accent-vermillion:#E53A28;
+    --accent-lime:#C8FF3D;
+    --accent-graphite:#1A1A1A;
+    --muted: rgba(11,27,43,.55);
+    --muted-pulp: rgba(239,234,216,.55);
+    --vel:0; /* scroll velocity register */
+    --scroll:0;
+    --mx:50vw;
+    --my:50vh;
+  }
+
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html,body{ background:var(--bg-pulp); color:var(--text-ink); -webkit-font-smoothing:antialiased; }
+  body{
+    font-family:'Newsreader', serif;
+    font-size:15px;
+    line-height:1.6;
+    overflow-x:hidden;
+  }
+  a{ color:inherit; text-decoration:none; }
+  ::selection{ background:var(--accent-vermillion); color:var(--bg-pulp); }
+
+  .mono{ font-family:'IBM Plex Mono', monospace; text-transform:uppercase; letter-spacing:.18em; font-size:11px; }
+  .display{ font-family:'Bricolage Grotesque', sans-serif; font-variation-settings:'wght' 500, 'wdth' 100, 'opsz' 96; letter-spacing:-0.035em; line-height:.9; }
+  .italic{ font-family:'Newsreader', serif; font-style:italic; }
+
+  /* ============ HEADER / NAV ============ */
+  header.site-head{
+    position:relative; z-index:50; padding:22px 36px 0;
+  }
+  .meta-row{
+    display:flex; justify-content:space-between; align-items:center;
+    color:var(--muted); margin-bottom:18px;
+  }
+  .meta-row .dot{
+    display:inline-block; width:8px; height:8px; border-radius:50%; background:var(--accent-vermillion);
+    vertical-align:middle; margin-right:10px;
+  }
+  nav.tabs{
+    display:flex; gap:0; align-items:stretch; border-top:1px solid var(--text-ink); border-bottom:1px solid var(--text-ink);
+  }
+  nav.tabs a{
+    flex:0 0 auto; padding:18px 28px 16px; font-family:'IBM Plex Mono', monospace;
+    text-transform:uppercase; letter-spacing:.22em; font-size:12px; color:var(--text-ink);
+    border-right:1px solid var(--accent-lime); position:relative;
+    transition: color .25s ease, background .25s ease;
+  }
+  nav.tabs a:first-child{ border-left:1px solid var(--accent-lime); margin-left:-1px; }
+  nav.tabs a:last-child{ border-right:none; margin-left:auto; }
+  nav.tabs a.active{ background:transparent; }
+  nav.tabs a.active::after{
+    content:''; position:absolute; left:28px; right:28px; bottom:8px; height:2px; background:var(--accent-vermillion);
+  }
+  nav.tabs a:hover{ color:var(--accent-vermillion); }
+  .tab-cue{ margin-left:auto; padding:18px 28px 16px; color:var(--muted); font-family:'IBM Plex Mono', monospace; font-size:11px; letter-spacing:.2em; text-transform:uppercase; }
+
+  /* ============ HERO — split-clip-reveal ============ */
+  .hero{
+    position:relative; height: clamp(620px, 92vh, 920px);
+    overflow:hidden; background:var(--bg-pulp);
+    border-bottom: 1px solid var(--text-ink);
+  }
+  .hero .left-half, .hero .right-half{
+    position:absolute; top:0; bottom:0; overflow:hidden;
+    will-change: transform, clip-path;
+    transition: clip-path 1.1s cubic-bezier(.86, 0, .07, 1);
+  }
+  .hero .left-half{
+    left:0; width:52%;
+    background:var(--bg-pulp);
+    clip-path: inset(0 100% 0 0); /* wipe from left */
+  }
+  .hero .right-half{
+    right:0; width:48%;
+    background:var(--bg-ink);
+    clip-path: inset(0 0 100% 0); /* wipe from top */
+  }
+  .is-loaded .hero .left-half{ clip-path: inset(0 0 0 0); }
+  .is-loaded .hero .right-half{ clip-path: inset(0 0 0 0); }
+
+  .hero .right-half img{
+    position:absolute; inset:0; width:100%; height:120%; object-fit:cover;
+    transform: translate3d(0, calc(var(--scroll) * -0.18px), 0);
+    will-change: transform;
+    background:#173045; /* fallback while loading */
+  }
+  .hero .seam{
+    position:absolute; top:0; bottom:0; left:52%; width:1px; background:var(--accent-lime); z-index:5;
+    transform: translateY(0);
+  }
+  .hero .seam-coord{
+    position:absolute; top:30px; left:calc(52% + 10px); color:var(--accent-lime);
+    font-family:'IBM Plex Mono', monospace; font-size:10px; letter-spacing:.2em; text-transform:uppercase;
+    z-index:6;
+  }
+
+  .hero .text{
+    position:absolute; left:48px; right:0; top:0; height:100%;
+    display:flex; flex-direction:column; justify-content:center; gap:28px;
+    padding:42px 60px 56px 0; width:52%;
+  }
+  .hero .text .scroll-cue-wrap{ position:absolute; left:0; right:0; bottom:36px; }
+  .hero .upper{ max-width:520px; }
+  .hero .eyebrow{
+    color:var(--accent-vermillion);
+    font-family:'IBM Plex Mono', monospace; font-size:12px; letter-spacing:.22em; text-transform:uppercase;
+    margin-bottom:22px;
+  }
+  .hero .blurb{
+    font-family:'Newsreader', serif; font-style:italic;
+    font-size:18px; line-height:1.55; color:var(--text-ink);
+    max-width:460px; margin-top:18px;
+  }
+  .hero .scroll-cue{
+    margin-top:14px; color:var(--muted);
+    font-family:'IBM Plex Mono', monospace; font-size:11px; letter-spacing:.2em; text-transform:uppercase;
+  }
+  .hero h1{
+    font-family:'Bricolage Grotesque', sans-serif;
+    font-size: clamp(72px, 12vw, 168px);
+    line-height: .85;
+    letter-spacing:-0.045em;
+    color:var(--text-ink);
+  }
+  .hero h1 .line{ display:block; }
+  .hero h1 .surname{
+    font-family:'Newsreader', serif; font-style:italic; font-weight:500;
+    color:var(--accent-vermillion); letter-spacing:-0.03em;
+  }
+  .hero h1 .surname .period{ color:var(--text-ink); }
+
+  /* per-letter weight pulse */
+  .hero h1 .line.weight-pulse span{
+    display:inline-block;
+    font-variation-settings: 'wght' var(--w, 500), 'wdth' 100;
+    transition: none;
+  }
+
+  /* hero pull-apart on scroll (scrubbed in JS): translateX of halves */
+  .hero .left-half{ transform: translate3d(calc(var(--hero-pull, 0) * -1px), 0, 0); }
+  .hero .right-half{ transform: translate3d(calc(var(--hero-pull, 0) * 1px), 0, 0); }
+
+  /* ============ SECTION 1 — Cursor-tracked List ============ */
+  .cursor-list{
+    position:relative; padding: 120px 36px 120px;
+    background:var(--bg-pulp);
+    border-bottom: 1px solid var(--text-ink);
+    overflow:hidden;
+  }
+  .section-head{
+    display:flex; justify-content:space-between; align-items:flex-end;
+    margin-bottom: 80px; padding-bottom: 14px;
+    border-bottom: 1px solid var(--text-ink);
+  }
+  .section-head .eyebrow{
+    color:var(--accent-vermillion);
+    font-family:'IBM Plex Mono', monospace; font-size:12px; letter-spacing:.22em; text-transform:uppercase;
+  }
+  .section-head h2{
+    font-family:'Bricolage Grotesque', sans-serif;
+    font-variation-settings:'wght' 600, 'wdth' 85;
+    font-size: clamp(36px, 5.4vw, 76px); line-height: .9; letter-spacing:-0.03em;
+    text-transform:uppercase; max-width: 720px;
+  }
+  .section-head .meta{
+    color:var(--muted);
+    font-family:'IBM Plex Mono', monospace; font-size:11px; letter-spacing:.2em; text-transform:uppercase;
+    text-align:right;
+  }
+
+  /* reserve space on the right so list rows never slide under the fixed preview card */
+  .frag-list{ list-style:none; max-width: calc(100% - 340px); }
+  .frag-list li{
+    position:relative; display:grid; grid-template-columns: 60px 1fr auto auto; gap:32px;
+    align-items:center; padding:22px 8px; border-bottom: 1px solid rgba(11,27,43,.18);
+    cursor: pointer;
+    transition: padding-left .35s ease, color .35s ease;
+  }
+  .frag-list li::before{
+    content:''; position:absolute; top:0; left:0; right:0; height:1px; background:var(--accent-vermillion);
+    transform: scaleX(0); transform-origin: left center; transition: transform .45s cubic-bezier(.2,.8,.2,1);
+  }
+  .frag-list li:hover::before{ transform: scaleX(1); }
+  .frag-list li:hover{ padding-left: 28px; }
+  .frag-list li .idx{
+    font-family:'IBM Plex Mono', monospace; font-size:13px; letter-spacing:.15em;
+    color:var(--muted); transition: color .3s ease;
+  }
+  .frag-list li:hover .idx{ color:var(--accent-vermillion); }
+  .frag-list li .title{
+    font-family:'Bricolage Grotesque', sans-serif;
+    font-variation-settings:'wght' 400, 'wdth' 100;
+    font-size: clamp(28px, 4.4vw, 56px); line-height: 1; letter-spacing:-0.025em;
+    color:var(--text-ink);
+    transition: font-variation-settings .35s ease, letter-spacing .35s ease;
+  }
+  .frag-list li:hover .title{
+    font-variation-settings:'wght' 700, 'wdth' 100;
+    letter-spacing:-0.045em;
+  }
+  .frag-list li .year{
+    font-family:'Newsreader', serif; font-style:italic; font-size:24px; color:var(--accent-vermillion);
+  }
+  .frag-list li .tag{
+    font-family:'IBM Plex Mono', monospace; font-size:11px; letter-spacing:.2em; text-transform:uppercase;
+    color:var(--muted);
+  }
+
+  .preview{
+    position:fixed; top:50%; right:48px; width:260px; height:340px; pointer-events:none;
+    transform: translateY(-50%);
+    z-index: 200; opacity:0;
+    transition: opacity .25s ease, clip-path .35s cubic-bezier(.2,.8,.2,1);
+    clip-path: inset(50% 0 50% 0);
+    background: var(--bg-ink);
+    box-shadow: 0 30px 60px rgba(11,27,43,.35);
+  }
+  .preview.active{
+    opacity:1;
+    clip-path: inset(0 0 0 0);
+  }
+  .preview img, .preview .type-preview{
+    width:100%; height:100%; object-fit:cover; display:block;
+  }
+  .preview .type-preview{
+    display:flex; align-items:center; justify-content:center; text-align:center;
+    background:var(--bg-ink); color:var(--bg-pulp); padding:24px;
+  }
+  .preview .type-preview .stamp-text{
+    border:2px double var(--accent-vermillion); color:var(--accent-vermillion);
+    width:200px; height:200px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center; text-align:center;
+    font-family:'IBM Plex Mono', monospace; font-size:11px; letter-spacing:.15em; text-transform:uppercase;
+    transform: rotate(-12deg);
+    line-height:1.5;
+  }
+
+  /* row entrance reveal — opacity-only, default visible to avoid IO timing pitfalls */
+  .frag-list li{ opacity: 0; transform: translateY(14px); transition: opacity .55s ease, transform .55s cubic-bezier(.2,.8,.2,1), padding-left .35s ease, color .35s ease; }
+  .frag-list li.in{ opacity: 1; transform: translateY(0); }
+
+  /* ============ SECTION 2 — Scroll-velocity Marquee ============ */
+  .marquee-section{
+    background:var(--bg-ink); color:var(--text-pulp);
+    border-top:2px solid var(--accent-vermillion); border-bottom:2px solid var(--accent-vermillion);
+    padding: 36px 0; position:relative; overflow:hidden;
+  }
+  .rail{ display:flex; white-space:nowrap; will-change: transform; }
+  .rail-1{
+    font-family:'Bricolage Grotesque', sans-serif; font-style:italic;
+    font-variation-settings:'wght' 600, 'wdth' 100;
+    font-size: clamp(56px, 8vw, 110px); line-height:1; letter-spacing:-0.02em;
+  }
+  .rail-1 .sep{ color: var(--accent-vermillion); padding:0 36px; font-style:normal; }
+  .rail-divider{
+    height:1px; background:var(--accent-lime); margin: 18px 0;
+  }
+  .rail-2{
+    font-family:'IBM Plex Mono', monospace; font-size:24px; letter-spacing:.2em; text-transform:uppercase;
+    color: var(--accent-lime);
+  }
+  .rail-2 .item{ padding: 0 48px; }
+  .rail span.lex{ padding: 0 24px; }
+
+  /* ============ SECTION 3 — Sticky-stacked Panels ============ */
+  .stack-outer{
+    position:relative; height: 400vh;
+  }
+  .stack-panel{
+    position:sticky; top:0; height:100vh; width:100%; overflow:hidden;
+    transform-origin: center top;
+    will-change: transform, opacity, filter;
+  }
+  .stack-panel .inner{
+    width:100%; height:100%; overflow:hidden; position:relative;
+  }
+
+  /* Panel A — Output */
+  .panel-A .inner{
+    display:grid; grid-template-columns: 58% 42%;
+  }
+  .panel-A .photo{
+    background: var(--bg-ink);
+    overflow:hidden; position:relative;
+  }
+  .panel-A .photo img{
+    width:100%; height:100%; object-fit:cover;
+    transform: translate3d(0, calc(var(--p-A, 0) * -40px), 0);
+  }
+  .panel-A .text{
+    background: var(--bg-ink); color:var(--text-pulp);
+    padding: 80px 48px; display:flex; flex-direction:column; justify-content:space-between;
+  }
+  .panel-A .text .eyebrow{ color:var(--accent-vermillion); font-family:'IBM Plex Mono', monospace; font-size:12px; letter-spacing:.22em; text-transform:uppercase; }
+  .panel-A .text h3{
+    font-family:'Bricolage Grotesque', sans-serif;
+    font-variation-settings:'wght' 500, 'wdth' 100;
+    font-size: clamp(48px, 6vw, 96px); line-height:.9; letter-spacing:-0.035em; margin-top: 18px;
+    color: var(--text-pulp);
+  }
+  .panel-A .text h3 .it{
+    font-family:'Newsreader', serif; font-style:italic; font-weight:500; color: var(--accent-vermillion);
+    letter-spacing:-0.02em;
+  }
+  .panel-A .meta-grid{
+    display:grid; grid-template-columns: 1fr 1fr 1fr; gap:24px;
+    font-family:'IBM Plex Mono', monospace; font-size:11px; letter-spacing:.18em; text-transform:uppercase;
+    color: var(--muted-pulp);
+  }
+  .panel-A .meta-grid b{ color:var(--text-pulp); font-weight:normal; display:block; margin-top:6px; font-size:13px; letter-spacing:.12em; }
+
+  /* Panel B — Palette */
+  .panel-B .inner{
+    background:var(--bg-ink); color:var(--text-pulp);
+    padding: 70px 48px 0; display:flex; flex-direction:column; justify-content:space-between;
+  }
+  .panel-B .head{ max-width: 760px; }
+  .panel-B .eyebrow{ color:var(--accent-lime); font-family:'IBM Plex Mono', monospace; font-size:12px; letter-spacing:.22em; text-transform:uppercase; }
+  .panel-B h3{
+    font-family:'Bricolage Grotesque', sans-serif;
+    font-variation-settings:'wght' 700, 'wdth' 75;
+    font-size: clamp(48px, 7vw, 110px); line-height:.9; letter-spacing:-0.025em;
+    text-transform:uppercase; margin-top: 14px;
+  }
+  .panel-B .note{
+    font-family:'Newsreader', serif; font-style:italic; font-size:20px;
+    color: var(--text-pulp); max-width: 540px; margin-top: 22px; opacity:.9;
+  }
+  .panel-B .blocks{
+    display:grid; grid-template-columns: repeat(5, 1fr);
+    height: 58%;
+  }
+  .panel-B .blocks .blk{
+    display:flex; flex-direction:column; justify-content:flex-end; padding:18px;
+    border-right: 1px solid rgba(255,255,255,.08);
+    font-family:'IBM Plex Mono', monospace; font-size:10px; letter-spacing:.15em; text-transform:uppercase;
+  }
+  .panel-B .blocks .blk:last-child{ border-right:none; }
+  .panel-B .blocks .blk[data-c="cream"]{ background:#F5F1E6; color:#1C1915; }
+  .panel-B .blocks .blk[data-c="verm"]{ background:#E83A28; color:#fff; }
+  .panel-B .blocks .blk[data-c="yel"]{ background:#F4D03A; color:#1C1915; }
+  .panel-B .blocks .blk[data-c="blu"]{ background:#2A4A8A; color:#fff; }
+  .panel-B .blocks .blk[data-c="ink"]{ background:#1C1915; color:#F5F1E6; }
+  .panel-B .blocks .blk .hex{ display:block; opacity:.7; margin-top:4px; }
+
+  /* Panel C — Type */
+  .panel-C .inner{
+    background:var(--bg-pulp); color:var(--text-ink);
+    display:grid; grid-template-columns: 1fr 38%;
+    padding: 70px 48px;
+  }
+  .panel-C .Aa{
+    font-family:'Bricolage Grotesque', sans-serif;
+    font-variation-settings:'wght' 800, 'wdth' 100;
+    font-size: clamp(220px, 30vw, 460px);
+    line-height: .85;
+    color: var(--accent-vermillion);
+    letter-spacing:-0.06em;
+    align-self:center;
+  }
+  .panel-C .side{
+    display:flex; flex-direction:column; gap:36px; justify-content:center;
+  }
+  .panel-C .side .eyebrow{ color:var(--accent-vermillion); font-family:'IBM Plex Mono', monospace; font-size:12px; letter-spacing:.22em; text-transform:uppercase; }
+  .panel-C .side h3{
+    font-family:'Bricolage Grotesque', sans-serif;
+    font-variation-settings:'wght' 500, 'wdth' 100;
+    font-size: 48px; line-height:.95; letter-spacing:-0.03em;
+  }
+  .panel-C .specs{
+    display:flex; flex-direction:column; gap:8px;
+    font-family:'IBM Plex Mono', monospace; font-size:13px; letter-spacing:.14em; text-transform:uppercase;
+    border-top: 1px solid var(--text-ink); border-bottom: 1px solid var(--text-ink);
+    padding: 18px 0;
+  }
+  .panel-C .specs .row{ display:flex; justify-content:space-between; }
+  .panel-C .specs .row b{ font-weight:normal; color:var(--accent-vermillion); }
+  .panel-C .logo-card{
+    border:1px solid var(--text-ink); padding:18px; background:var(--bg-pulp);
+    display:grid; grid-template-columns: 1fr auto; align-items:end;
+  }
+  .panel-C .logo-card .ct{
+    font-family:'Newsreader', serif; font-style:italic; font-size:96px; line-height:.85; color:var(--accent-vermillion);
+  }
+  .panel-C .logo-card .mark-meta{ font-family:'IBM Plex Mono', monospace; font-size:10px; letter-spacing:.18em; text-transform:uppercase; color:var(--muted); text-align:right; }
+
+  /* Panel D — Research */
+  .panel-D .inner{
+    background:var(--bg-ink); color:var(--text-pulp); position:relative;
+    padding: 70px 48px;
+  }
+  .panel-D .keywords{
+    position:absolute; left:48px; top:120px; bottom:80px;
+    display:flex; flex-direction:column; gap:12px;
+    font-family:'IBM Plex Mono', monospace; font-size:13px; letter-spacing:.18em; text-transform:uppercase;
+    color: var(--accent-lime);
+  }
+  .panel-D .keywords .kw{
+    font-family:'Newsreader', serif; font-style:italic; font-size:36px; letter-spacing:-0.01em;
+    color:var(--text-pulp); text-transform:none;
+  }
+  .panel-D .keywords .kw::before{
+    content:'•'; color:var(--accent-lime); display:inline-block; margin-right:14px;
+  }
+  .panel-D .head{ display:flex; justify-content:space-between; align-items:baseline; max-width: 100%; }
+  .panel-D .head .eyebrow{ color:var(--accent-lime); font-family:'IBM Plex Mono', monospace; font-size:12px; letter-spacing:.22em; text-transform:uppercase; }
+  .panel-D .head .meta{ color:var(--muted-pulp); font-family:'IBM Plex Mono', monospace; font-size:11px; letter-spacing:.2em; text-transform:uppercase; }
+  .panel-D .collage{
+    position:absolute; inset: 140px 64px 80px 280px;
+  }
+  .panel-D .collage img{
+    position:absolute; object-fit:cover;
+    background:#173045;
+    box-shadow: 0 18px 30px rgba(0,0,0,.35);
+  }
+  .panel-D .collage .ref-1{ top: 0; right: 12%; width: 22%; height: 38%; }
+  .panel-D .collage .ref-2{ top: 8%; right: 38%; width: 26%; height: 32%; }
+  .panel-D .collage .ref-3{ bottom: 12%; left: 8%; width: 26%; height: 36%; }
+  .panel-D .collage .ref-4{ bottom: 18%; right: 14%; width: 22%; height: 30%; }
+  .panel-D .collage .label{
+    position:absolute;
+    font-family:'IBM Plex Mono', monospace; font-size:10px; letter-spacing:.18em; text-transform:uppercase;
+    color:var(--accent-lime); padding: 4px 0;
+  }
+  .panel-D .collage .lab-1{ top: -18px; right: 12%; }
+  .panel-D .collage .lab-2{ top: -8px; right: 38%; }
+  .panel-D .collage .lab-3{ bottom: -14px; left: 8%; }
+  .panel-D .collage .lab-4{ bottom: 2px; right: 14%; }
+  .panel-D .quote{
+    position:absolute; right:8%; bottom: 18%; max-width: 360px;
+    font-family:'Newsreader', serif; font-style:italic;
+    font-size: 28px; line-height:1.25; color:var(--text-pulp);
+  }
+  .panel-D .quote-meta{
+    position:absolute; right:8%; bottom: 8%;
+    font-family:'IBM Plex Mono', monospace; font-size:10px; letter-spacing:.2em; text-transform:uppercase;
+    color: var(--accent-vermillion);
+  }
+  .panel-D svg.lines{
+    position:absolute; inset:0; pointer-events:none;
+  }
+  .panel-D svg.lines path{
+    fill:none; stroke:var(--accent-lime); stroke-width:1; stroke-dasharray: 800; stroke-dashoffset: 800;
+    transition: stroke-dashoffset .8s ease;
+  }
+  .panel-D.in svg.lines path{ stroke-dashoffset: 0; }
+
+  /* Per-panel z-stack and scale-down */
+  .stack-panel{ z-index:1; }
+  .panel-A{ z-index: 1; }
+  .panel-B{ z-index: 2; }
+  .panel-C{ z-index: 3; }
+  .panel-D{ z-index: 4; }
+
+  /* panel scale-down driven by JS via --pscale */
+  .stack-panel{
+    transform: scale(var(--pscale, 1));
+    filter: brightness(var(--pbright, 1));
+    transition: filter .4s ease, transform .4s ease;
+  }
+
+  /* panel headline clip-reveal */
+  .panel-A h3, .panel-B h3, .panel-C .Aa, .panel-D .quote{
+    clip-path: inset(0 100% 0 0);
+    transition: clip-path 1s cubic-bezier(.2,.8,.2,1);
+  }
+  .panel-A.lock h3{ clip-path: inset(0 0 0 0); }
+  .panel-B.lock h3{ clip-path: inset(0 0 0 0); }
+  .panel-C.lock .Aa{ clip-path: inset(0 0 0 0); }
+  .panel-D.lock .quote{ clip-path: inset(0 0 0 0); }
+
+  /* ============ FOOTER — word-mask fill ============ */
+  .footer{
+    position:relative; background:var(--bg-ink); color:var(--text-pulp);
+    padding: 100px 36px 36px;
+    overflow:hidden;
+  }
+  .footer-grid{
+    display:grid; grid-template-columns: 1fr auto;
+    align-items:flex-start; gap: 32px;
+  }
+  .footer-grab{
+    font-family:'Newsreader', serif; font-style:italic;
+    font-size: clamp(36px, 4.6vw, 64px); line-height:.95;
+    color: var(--text-pulp);
+    transform: rotate(-1.5deg); transform-origin: left center;
+    margin-bottom: 18px;
+    max-width:680px;
+  }
+  .footer .stamp{
+    width:170px; height:170px; border-radius:50%;
+    border:3px double var(--accent-vermillion); color:var(--accent-vermillion);
+    display:flex; align-items:center; justify-content:center; text-align:center;
+    font-family:'IBM Plex Mono', monospace; font-size:11px; letter-spacing:.18em;
+    background: radial-gradient(circle, rgba(229,58,40,.08), transparent 70%);
+    animation: stamp-wobble 6s ease-in-out infinite;
+    line-height:1.6;
+  }
+  @keyframes stamp-wobble{
+    0%,100%{ transform: rotate(-8deg); }
+    50%{ transform: rotate(-12deg); }
+  }
+
+  .footer-eyebrow{
+    color: var(--accent-vermillion);
+    font-family:'IBM Plex Mono', monospace; font-size:12px; letter-spacing:.22em; text-transform:uppercase;
+    margin-bottom:36px;
+  }
+
+  .email-wrap{
+    position:relative;
+    margin: 12px 0 60px;
+  }
+  .email{
+    display:block;
+    font-family:'Bricolage Grotesque', sans-serif;
+    font-variation-settings:'wght' 700, 'wdth' 100;
+    font-size: clamp(56px, 12vw, 200px);
+    line-height:.92; letter-spacing:-0.045em;
+    color: transparent;
+    -webkit-text-stroke: 2px var(--text-pulp);
+  }
+  .email .word{
+    display:inline-block;
+    transition: color .5s ease, -webkit-text-stroke-width .5s ease;
+  }
+  .email .word.filled{
+    color: var(--accent-lime);
+    -webkit-text-stroke-width: 0;
+  }
+  .email .at{ color: var(--text-pulp); -webkit-text-stroke: 0; }
+  .email .dot-fin{
+    color: var(--accent-vermillion);
+    -webkit-text-stroke: 0;
+  }
+
+  .stat-strip{
+    display:grid; grid-template-columns: repeat(3, 1fr);
+    gap: 48px; border-top: 1px solid rgba(239,234,216,.18); border-bottom: 1px solid rgba(239,234,216,.18);
+    padding: 36px 0; margin: 24px 0 48px;
+  }
+  .stat-strip .stat{ }
+  .stat-strip .stat .n{
+    font-family:'Bricolage Grotesque', sans-serif;
+    font-variation-settings:'wght' 800, 'wdth' 85;
+    font-size: clamp(54px, 8vw, 112px); line-height: .9; color: var(--text-pulp);
+    letter-spacing:-0.04em;
+  }
+  .stat-strip .stat .n .pct{ color: var(--accent-lime); }
+  .stat-strip .stat .lab{
+    font-family:'IBM Plex Mono', monospace; font-size:11px; letter-spacing:.2em; text-transform:uppercase;
+    color: var(--muted-pulp); margin-top: 10px;
+  }
+
+  .four-cols{
+    display:grid; grid-template-columns: repeat(4, 1fr); gap: 32px;
+    margin-top: 12px;
+  }
+  .four-cols .col{ }
+  .four-cols .col .h{
+    font-family:'IBM Plex Mono', monospace; font-size:12px; letter-spacing:.22em; text-transform:uppercase;
+    color: var(--text-pulp); margin-bottom:10px;
+    border-bottom: 1px solid rgba(239,234,216,.18); padding-bottom: 8px;
+  }
+  .four-cols .col .b{
+    font-family:'Newsreader', serif; font-size:15px; line-height:1.55; color: var(--muted-pulp);
+  }
+  .four-cols .col .b a{ color: var(--text-pulp); text-decoration: underline; text-decoration-color: var(--accent-vermillion); text-underline-offset: 3px; }
+
+  .foot-bar{
+    display:flex; justify-content:space-between; align-items:center;
+    margin-top:60px; padding-top: 20px; border-top: 1px solid rgba(239,234,216,.25);
+    font-family:'IBM Plex Mono', monospace; font-size:10px; letter-spacing:.22em; text-transform:uppercase;
+    color: var(--muted-pulp);
+  }
+  .foot-bar a{ color: var(--text-pulp); }
+
+  /* ============ Entrance utility ============ */
+  .reveal-up{ opacity:0; transform: translateY(20px); transition: opacity .8s ease, transform .8s cubic-bezier(.2,.8,.2,1); }
+  .reveal-up.in{ opacity:1; transform: translateY(0); }
+  .stagger > * { opacity:0; transform: translateY(14px); transition: opacity .55s ease, transform .55s cubic-bezier(.2,.8,.2,1); transition-delay: calc(var(--i,0) * 60ms); }
+  .stagger.in > * { opacity:1; transform: translateY(0); }
+
+  /* letter-spacing wind-up for section heading */
+  .wind-up{ opacity:.4; letter-spacing: .35em; transition: opacity .8s ease, letter-spacing .8s cubic-bezier(.2,.8,.2,1); }
+  .wind-up.in{ opacity:1; letter-spacing: -0.03em; }
+
+  /* ============ Responsive ============ */
+  @media (max-width: 900px){
+    header.site-head{ padding: 18px 18px 0; }
+    nav.tabs{ flex-wrap:wrap; }
+    nav.tabs a{ padding: 14px 18px 12px; font-size:11px; }
+    nav.tabs a:last-child{ margin-left: 0; }
+    .tab-cue{ display:none; }
+
+    .hero{ height: auto; min-height: 100vh; display:flex; flex-direction:column; border-bottom: 1px solid var(--text-ink); }
+    .hero .left-half{ position:relative; width:100%; height: auto; padding:24px 24px 36px; clip-path: inset(0 0 0 0); }
+    .hero .right-half{ position:relative; width:100%; height: 60vh; clip-path: inset(0 0 0 0); right:auto; }
+    .hero .right-half img{ height:110%; transform:none !important; }
+    .hero .text{ position:relative; padding: 24px 24px 24px 0; width:100%; height:auto; }
+    .hero h1{ font-size: clamp(54px, 16vw, 110px); }
+    .hero .seam{ display:none; } .hero .seam-coord{ display:none; }
+
+    .cursor-list{ padding: 70px 18px; }
+    .section-head{ flex-direction:column; align-items:flex-start; gap:14px; margin-bottom:48px; }
+    .frag-list{ max-width: none; }
+    .frag-list li{ grid-template-columns: 40px 1fr; gap:14px; padding: 16px 0; }
+    .frag-list li .year, .frag-list li .tag{ grid-column: 2/3; font-size:14px; }
+    .frag-list li .year{ font-size:18px; }
+    .frag-list li .title{ font-size:30px; }
+    .preview{ display:none; }
+
+    .marquee-section{ padding: 22px 0; }
+    .rail-1{ font-size: 48px; }
+    .rail-2{ font-size: 16px; }
+
+    /* stack panels: drop pin, stack vertically */
+    .stack-outer{ height: auto; }
+    .stack-panel{ position:relative; height: auto; top:auto; }
+    .panel-A .inner{ grid-template-columns: 1fr; }
+    .panel-A .photo{ height: 60vh; }
+    .panel-A .text{ padding: 36px 22px; }
+    .panel-B .inner{ padding: 36px 22px 0; }
+    .panel-B .blocks{ grid-template-columns: repeat(5, 1fr); height: 200px; }
+    .panel-C .inner{ grid-template-columns: 1fr; padding: 36px 22px; gap: 36px; }
+    .panel-C .Aa{ font-size: 60vw; }
+    .panel-D .inner{ padding: 36px 22px; height: auto; min-height: 1200px; }
+    .panel-D .keywords{ position:relative; left:auto; top:auto; bottom:auto; margin-top: 24px; }
+    .panel-D .collage{ position:relative; inset:auto; margin-top: 36px; height: 600px; }
+
+    .footer{ padding: 60px 18px 24px; }
+    .footer-grid{ grid-template-columns: 1fr; }
+    .footer .stamp{ width:130px; height:130px; font-size:10px; }
+    .email{ font-size: 14vw; }
+    .stat-strip{ grid-template-columns: 1fr; gap: 20px; padding: 22px 0; }
+    .four-cols{ grid-template-columns: 1fr 1fr; gap: 22px; }
+    .foot-bar{ flex-direction:column; gap:10px; align-items:flex-start; }
+  }
+
+  
+/* Argus adaptation: preserve the reference composition and motion. */
+.hero .right-half img{object-position:66% center}
+.hero .text .scroll-cue-wrap{display:flex;align-items:baseline;justify-content:space-between;gap:18px;max-width:520px;padding-right:32px}
+.hero .hero-quote{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.1em;text-transform:uppercase;border-bottom:1px solid var(--accent-vermillion);padding-bottom:4px;transition:color .25s}
+.hero .hero-quote:hover{color:var(--accent-vermillion)}
+html{scroll-behavior:smooth} :focus-visible{outline:2px solid #007cc3;outline-offset:6px}
+.skip-link{position:fixed;left:16px;top:-70px;background:var(--bg-pulp);padding:12px;z-index:1000}.skip-link:focus{top:10px}
+.brand{display:inline-flex}.brand img{width:159px;height:43px;object-fit:contain}.meta-row{min-height:43px}.header-note{margin-left:auto;margin-right:40px}.header-phone{color:var(--text-ink);letter-spacing:.08em}
+nav.tabs a.nav-quote{margin-left:auto;border-right:0;background:var(--bg-ink);color:var(--text-pulp)}nav.tabs a.nav-quote:hover{background:var(--accent-vermillion);color:var(--bg-pulp)}
+.editorial-cta{display:inline-flex;align-items:center;gap:40px;border-bottom:1px solid currentColor;padding:14px 0 10px;font-family:'IBM Plex Mono',monospace;font-size:12px;text-transform:uppercase;letter-spacing:.1em;margin-top:22px;transition:color .25s}
+.cta-arrow{font-size:24px;line-height:1;transition:transform .25s}.editorial-cta:hover{color:var(--accent-vermillion)}.editorial-cta:hover .cta-arrow{transform:translate(3px,-3px)}.light{color:var(--text-pulp)}
+.frag-list li{grid-template-columns:35px 1fr auto;gap:20px}.frag-list li .title{font-size:clamp(28px,3.7vw,50px)}.frag-list li .title::after{content:'';position:absolute;inset:0}.frag-list li .tag{font-size:10px;letter-spacing:.07em}.frag-list li:focus-within{padding-left:28px;color:var(--accent-vermillion)}
+.panel-copy{font-size:20px;line-height:1.5;margin-top:28px;max-width:350px;color:var(--text-pulp);opacity:.8}.panel-A .photo img{object-position:49% center}.panel-A .text{padding:65px 40px}.panel-A .meta-grid{gap:16px;letter-spacing:.06em}.panel-A .meta-grid b{font-size:11px;letter-spacing:.03em}
+.panel-B .blocks{height:44%;margin-top:36px;flex-shrink:0}.panel-B .photo-blk{position:relative;overflow:hidden}.photo-blk img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:transform .65s;filter:brightness(.65)}.photo-blk:hover img{transform:scale(1.06)}.photo-blk::after{content:'';position:absolute;inset:0;background:linear-gradient(transparent 25%,rgba(11,27,43,.75))}.panel-B .photo-blk>span{position:relative;z-index:1;color:var(--text-pulp);font-size:18px;letter-spacing:.01em}.panel-B .blocks .blk .hex{font-size:10px;letter-spacing:.06em;margin-top:8px}.block-arrow{font-size:80px;margin-bottom:auto;line-height:1.1;color:var(--accent-lime)}
+.panel-C .side{gap:25px}.panel-C .Aa{font-size:clamp(220px,33vw,480px)}.local-copy{font-size:20px;line-height:1.5;max-width:420px}.panel-C .specs{font-size:11px;letter-spacing:.05em}.panel-C .logo-card img{width:159px;height:43px;object-fit:contain}.panel-C .side h3{font-size:clamp(32px,3.5vw,48px)}
+.panel-D .quote{right:6%;bottom:7%;font-size:clamp(40px,5vw,72px);max-width:290px;text-align:right}.panel-D .quote-meta{bottom:3%;right:6%;color:var(--accent-lime)}.panel-D .collage .ref-4{right:24%;bottom:28%}.panel-D .collage .lab-4{right:24%;bottom:22%}.panel-D .collage .ref-3{left:2%;bottom:4%}.panel-D .collage .lab-3{left:2%;bottom:-18px}
+.email{font-size:clamp(50px,11.5vw,180px);white-space:nowrap;letter-spacing:-.07em}.stat-strip .stat .n{font-size:clamp(42px,6.2vw,86px)}.stat:hover .n{color:var(--accent-lime)}.footer .stamp:hover{background:var(--accent-vermillion);color:var(--bg-ink)}
+@media(min-width:901px) and (max-height:750px){.panel-A .text{padding:40px 32px}.panel-A .text h3{font-size:64px}.panel-B .inner,.panel-C .inner,.panel-D .inner{padding-top:40px}.panel-B h3{font-size:76px}.panel-B .note{font-size:18px;margin-top:12px}.panel-C .side{gap:18px}.panel-C .specs{padding:10px 0}}
+@media(max-width:1100px) and (min-width:901px){.header-note{font-size:9px;margin-right:18px}nav.tabs a{padding:17px 18px}.frag-list{max-width:calc(100% - 260px)}.preview{width:210px;height:280px;right:28px}.frag-list li .tag{display:none}}
+@media(max-width:900px){
+ .header-note{display:none}.header-phone{font-size:10px}.meta-row{gap:14px;margin-bottom:16px}nav.tabs{flex-wrap:nowrap}nav.tabs a{flex:1;padding:15px 6px 13px;text-align:center;font-size:9px;letter-spacing:.02em}nav.tabs a.nav-quote{margin-left:0}nav.tabs a.active::after{left:8px;right:8px}
+ .hero{min-height:0;display:flex;flex-direction:column}.hero .left-half{display:none}.hero .right-half{order:0;height:60vh;min-height:320px;transform:none!important}.hero .right-half img{height:110%;object-position:65% center}.hero .text{order:1;left:0;padding:42px 24px 36px;width:100%;height:auto;gap:0}.hero .upper{max-width:600px}.hero h1{font-size:clamp(54px,16vw,110px)}.hero .eyebrow{font-size:10px;letter-spacing:.14em;margin-bottom:22px}.hero .blurb{font-size:18px;max-width:460px;margin-top:18px}.hero .text .scroll-cue-wrap{position:static;display:flex;align-items:center;gap:22px;flex-wrap:wrap;margin-top:26px}.hero .scroll-cue{font-size:10px}.hero .hero-quote{font-size:10px}
+ .section-head h2{font-size:clamp(34px,6vw,60px);line-height:1}.section-head .eyebrow{font-size:10px}.section-head .meta{text-align:left}.frag-list li{grid-template-columns:24px 1fr;gap:14px}.frag-list li .title{font-size:clamp(26px,6vw,42px)}.frag-list li .tag{grid-column:2;font-size:10px}
+ .stack-panel{transform:none!important;filter:none!important}.panel-A h3,.panel-B h3,.panel-C .Aa,.panel-D .quote{clip-path:none!important}.panel-A .photo{height:52vh;min-height:330px}.panel-A .text{padding:42px 22px;gap:48px}.panel-A .text h3{font-size:64px}.panel-copy{max-width:500px}.panel-A .meta-grid{gap:16px}
+ .panel-B .inner{padding:48px 22px 0}.panel-B h3{font-size:clamp(50px,9vw,82px)}.panel-B .blocks{height:auto;grid-template-columns:repeat(2,1fr);margin-top:32px}.panel-B .blocks .blk{height:220px;padding:16px}.panel-B .blocks .blk:last-child{grid-column:1/-1;height:140px}.block-arrow{font-size:44px}.panel-B .note{font-size:19px}
+ .panel-C .Aa{font-size:70vw;line-height:.8}.panel-C .inner{padding:64px 22px;gap:46px}.panel-C .side h3{font-size:42px}.panel-C .side{gap:26px}.panel-C .logo-card{max-width:440px}.panel-C .specs{font-size:10px}
+ .panel-D .inner{min-height:0;padding:40px 22px 42px}.panel-D .head .meta{display:none}.panel-D .keywords{flex-direction:row;flex-wrap:wrap;gap:8px 18px}.panel-D .keywords>span:first-child{width:100%}.panel-D .keywords .kw{font-size:26px}.panel-D .collage{height:490px;margin-top:46px}.panel-D .collage .ref-1{width:44%;height:36%;right:0}.panel-D .collage .ref-2{width:46%;height:34%;left:0;top:4%}.panel-D .collage .ref-3{width:44%;height:35%;left:0;bottom:12%}.panel-D .collage .ref-4{width:42%;height:35%;right:0;bottom:16%}.panel-D .collage .lab-1{right:0;top:-24px}.panel-D .collage .lab-2{left:0;top:0;font-size:9px}.panel-D .collage .lab-3{left:0;bottom:5%;font-size:9px}.panel-D .collage .lab-4{right:0;bottom:9%;font-size:9px}.panel-D .quote{position:static;text-align:left;max-width:none;font-size:64px;margin-top:0}.panel-D .quote-meta{position:static;display:inline-block;margin-top:22px}.panel-D svg.lines{opacity:.25}
+ .footer-grid{grid-template-columns:1fr auto;gap:14px}.footer .stamp{width:95px;height:95px;font-size:8px;letter-spacing:.08em}.footer-eyebrow{font-size:10px;letter-spacing:.1em;margin-bottom:24px}.footer-grab{font-size:36px}.email{font-size:11.4vw;margin-top:44px}.email-wrap{margin-bottom:40px}.stat-strip{gap:28px}.stat-strip .stat .n{font-size:54px}.stat-strip .stat .lab{font-size:10px;letter-spacing:.1em}.four-cols .col .h{font-size:10px}.foot-bar{font-size:8px;letter-spacing:.08em}
+}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*::before,*::after{animation:none!important;transition:none!important}.hero .left-half,.hero .right-half,.hero .right-half img{transform:none!important;clip-path:none!important}.frag-list li,.wind-up,.reveal-up,.stagger>*{opacity:1!important;transform:none!important}.wind-up{letter-spacing:-.03em}.stack-panel{transform:none!important;filter:none!important}.panel-A h3,.panel-B h3,.panel-C .Aa,.panel-D .quote{clip-path:none!important}.email .word{color:var(--accent-lime);-webkit-text-stroke:0}}
+
+</style>
+</head>
+<body>
+<a class="skip-link" href="#work">Skip to insurance</a>
+<header class="site-head">
+  <div class="meta-row">
+    <a class="brand" href="#hero" aria-label="Argus Gibraltar home"><img src="./argus-logo.png" alt="Argus — Our Interest is You" width="159" height="43"></a>
+    <div class="mono header-note"><span class="dot"></span>Insurance, right here in Gibraltar.</div>
+    <a class="mono header-phone" href="tel:+35020079520">+350 200 79520 ↗</a>
+  </div>
+  <nav class="tabs stagger" aria-label="Primary">
+    <a href="#work" class="active" style="--i:0">◉ Insurance</a>
+    <a href="#panel-C" style="--i:1">Why Argus</a>
+    <a href="https://argus.gi/forms-documents" style="--i:2">Claims &amp; forms</a>
+    <a href="#contact" style="--i:3">Contact</a>
+    <a class="nav-quote" href="https://argus.gi/request-quote" style="--i:4">Get a quote ↗</a>
+  </nav>
+</header>
+<section class="hero" id="hero">
+  <div class="left-half"></div>
+  <div class="right-half">
+    <img src="./argus-business.jpg" alt="A business professional beside the Gibraltar coastline" width="2800" height="1500" fetchpriority="high">
+  </div>
+  <div class="seam" aria-hidden="true"></div>
+  <div class="seam-coord">Personal &amp; business · Gibraltar</div>
+  <div class="text">
+    <div class="upper">
+      <div class="eyebrow">✦ Personal · Business · Insurance</div>
+      <h1 aria-label="Argus Gibraltar."><span class="line weight-pulse" id="first-name" aria-hidden="true">Argus</span><span class="line surname" aria-hidden="true">Gibraltar<span class="period">.</span></span></h1>
+      <p class="blurb">Insurance for the homes, businesses and everyday lives that make Gibraltar our home. From your first car to your next chapter, our interest is you &mdash; with underwriting and claims decisions made right here in Gibraltar.</p>
+    </div>
+    <div class="scroll-cue-wrap"><a class="scroll-cue" href="#work">↓ Explore your insurance</a><a class="hero-quote" href="https://argus.gi/request-quote">Find your cover ↗</a></div>
+  </div>
+</section>
+<section class="cursor-list" id="work">
+  <div class="section-head"><div><div class="eyebrow">⎯⎯ Cover for what matters</div><h2 class="wind-up">A little certainty.<br>For everyday life.</h2></div><div class="meta">Personal &amp; business insurance<br>Explore your options ↗</div></div>
+  <ol class="frag-list" id="fragList">
+<li data-preview="img" data-src="./argus-motor.jpg"><span class="idx" aria-hidden="true">↗</span><a class="title" href="https://argus.gi/private-motor">Motor insurance</a><span class="tag">On the road</span></li>
+<li data-preview="img" data-src="./argus-home.jpg"><span class="idx" aria-hidden="true">↗</span><a class="title" href="https://argus.gi/individual-property-insurance">Home insurance</a><span class="tag">At home</span></li>
+<li data-preview="img" data-src="./argus-restaurant.jpg"><span class="idx" aria-hidden="true">↗</span><a class="title" href="https://argus.gi/business-insurance/">Business insurance</a><span class="tag">At work</span></li>
+<li data-preview="img" data-src="./argus-travel.jpg"><span class="idx" aria-hidden="true">↗</span><a class="title" href="https://argus.gi/travel/">Travel insurance</a><span class="tag">Further afield</span></li>
+<li data-preview="type" data-stamp="ARGUS<br>·<br>Marine insurance<br>·<br>GIBRALTAR"><span class="idx" aria-hidden="true">↗</span><a class="title" href="https://argus.gi/individual-yacht-pleasure-craft/">Marine insurance</a><span class="tag">On the water</span></li>
+<li data-preview="type" data-stamp="ARGUS<br>·<br>Claims &amp; documents<br>·<br>GIBRALTAR"><span class="idx" aria-hidden="true">↗</span><a class="title" href="https://argus.gi/forms-documents">Claims &amp; documents</a><span class="tag">Here to help</span></li></ol></section><div class="preview" id="preview" aria-hidden="true"></div>
+<section class="marquee-section" id="marquee-section" aria-label="Our interest is you. Gibraltar. Local decisions. Personal insurance. Business insurance.">
+<div class="rail rail-1" aria-hidden="true"><span class="lex">Our interest is you.</span><span class="sep">✦</span><span class="lex">Your life. Your cover.</span><span class="sep">✦</span><span class="lex">Right here in Gibraltar.</span><span class="sep">✦</span><span class="lex">Our interest is you.</span><span class="sep">✦</span><span class="lex">Your life. Your cover.</span><span class="sep">✦</span><span class="lex">Right here in Gibraltar.</span><span class="sep">✦</span></div><div class="rail-divider"></div><div class="rail rail-2" aria-hidden="true"><span class="item">Gibraltar</span><span class="item">·</span><span class="item">Local decisions</span><span class="item">·</span><span class="item">Personal insurance</span><span class="item">·</span><span class="item">Business insurance</span><span class="item">·</span><span class="item">Gibraltar</span><span class="item">·</span><span class="item">Local decisions</span><span class="item">·</span><span class="item">Personal insurance</span><span class="item">·</span><span class="item">Business insurance</span><span class="item">·</span></div></section>
+<div class="stack-outer" id="stack-outer">
+<section class="stack-panel panel-A" id="panel-A"><div class="inner">
+  <div class="photo"><img src="./argus-motor.jpg" alt="A couple beside their car in Gibraltar" width="2800" height="1500" loading="lazy"></div>
+  <div class="text"><div><div class="eyebrow">▸ Personal insurance</div><h3>Life moves.<br><span class="it">So do you.</span></h3><p class="panel-copy">From the familiar streets of home to your next destination, find insurance that fits the way you live.</p><a class="editorial-cta light" href="https://argus.gi/private-motor"><span>Explore motor insurance</span><span class="cta-arrow" aria-hidden="true">↗</span></a></div>
+  <div class="meta-grid"><div>At home<b>Home &amp; property</b></div><div>On the move<b>Motor &amp; travel</b></div><div>On the water<b>Yacht &amp; pleasure craft</b></div></div></div>
+</div></section>
+<section class="stack-panel panel-B" id="panel-B"><div class="inner">
+ <div class="head"><div class="eyebrow">Your world, considered</div><h3>For life.<br>For business.</h3><p class="note">Different lives. Different priorities. Start with what matters to you, and explore your cover with Argus.</p></div>
+ <div class="blocks">
+  <a class="blk photo-blk" data-c="cream" href="https://argus.gi/individual-property-insurance"><img src="./argus-home.jpg" alt="A family enjoying their garden" loading="lazy"><span>Home<span class="hex">Explore cover ↗</span></span></a>
+  <a class="blk photo-blk" data-c="verm" href="https://argus.gi/private-motor"><img src="./argus-motor.jpg" alt="Car insurance in Gibraltar" loading="lazy"><span>Motor<span class="hex">Explore cover ↗</span></span></a>
+  <a class="blk photo-blk" data-c="yel" href="https://argus.gi/business-insurance/"><img src="./argus-restaurant.jpg" alt="A restaurant owner at work" loading="lazy"><span>Business<span class="hex">Explore cover ↗</span></span></a>
+  <a class="blk photo-blk" data-c="blu" href="https://argus.gi/travel/"><img src="./argus-travel.jpg" alt="A traveller with his luggage" loading="lazy"><span>Travel<span class="hex">Explore cover ↗</span></span></a>
+  <a class="blk" data-c="ink" href="https://argus.gi/request-quote"><span class="block-arrow" aria-hidden="true">↗</span>Let's talk<span class="hex">Find your cover</span></a>
+ </div>
+</div></section>
+<section class="stack-panel panel-C" id="panel-C"><div class="inner">
+ <div class="Aa" aria-hidden="true">Gi.</div><div class="side"><div><div class="eyebrow">Local knowledge. Local decisions.</div><h3>A familiar place.<br>A personal approach.</h3></div>
+ <p class="local-copy">Our underwriting and claims decisions are made in Gibraltar. When you need us, you can speak to a team right here.</p>
+ <div class="specs"><div class="row"><span>Underwriting</span><b>In Gibraltar</b></div><div class="row"><span>Claims decisions</span><b>In Gibraltar</b></div><div class="row"><span>Find us</span><b>West One</b></div></div>
+ <a class="logo-card" href="https://argus.gi/the-argus-group"><img src="./argus-logo.png" alt="Argus — Our Interest is You" width="159" height="43"><div class="mark-meta">Meet Argus<br>Gibraltar ↗</div></a>
+ </div></div></section>
+<section class="stack-panel panel-D" id="panel-D"><div class="inner">
+ <div class="head"><div class="eyebrow">For the life you lead</div><div class="meta">Your priorities. Our interest.</div></div>
+ <div class="keywords"><span>What matters</span><span class="kw">home</span><span class="kw">family</span><span class="kw">business</span><span class="kw">freedom</span></div>
+ <svg class="lines" viewBox="0 0 1200 700" preserveAspectRatio="none" aria-hidden="true"><path d="M 250 200 C 420 240, 540 180, 700 220"/><path d="M 250 480 C 420 460, 580 540, 760 500"/><path d="M 700 220 C 820 280, 900 380, 980 460"/></svg>
+ <div class="collage"><img class="ref-1" src="./argus-home.jpg" alt="Family at home" loading="lazy"><span class="label lab-1">Room to grow</span><img class="ref-2" src="./argus-restaurant.jpg" alt="Restaurant owner" loading="lazy"><span class="label lab-2">Built by you</span><img class="ref-3" src="./argus-motor.jpg" alt="A couple and their car" loading="lazy"><span class="label lab-3">The everyday journey</span><img class="ref-4" src="./argus-travel.jpg" alt="Traveller at the airport" loading="lazy"><span class="label lab-4">Somewhere new</span></div>
+ <p class="quote">Our interest<br>is you.</p><a class="quote-meta" href="https://argus.gi/request-quote">Find your cover ↗</a>
+</div></section>
+</div>
+<footer class="footer" id="contact">
+ <div class="footer-grid"><div><div class="footer-eyebrow">↳ Let's talk about your cover</div><div class="footer-grab">Real people.<br>Right here in Gibraltar.</div></div><a class="stamp" href="https://argus.gi/request-quote">YOUR LIFE.<br>YOUR COVER.<br>LET'S TALK.<br>↗</a></div>
+ <div class="email-wrap"><a class="email" href="tel:+35020079520" id="email" aria-label="Call Argus on +350 200 79520"><span class="word" data-fill="0.18">+350</span> <span class="word" data-fill="0.42">200</span> <span class="word" data-fill="0.68">79520</span><span class="dot-fin">.</span></a></div>
+ <div class="stat-strip" id="statStrip"><a class="stat reveal-up" href="https://argus.gi/request-quote"><div class="n">Quote<span class="pct"> ↗</span></div><div class="lab">Tell us what you need to cover</div></a><a class="stat reveal-up" style="transition-delay:.12s" href="https://argus.gi/forms-documents"><div class="n">Claims<span class="pct"> ↗</span></div><div class="lab">Find forms &amp; documents</div></a><a class="stat reveal-up" style="transition-delay:.24s" href="https://argus.gi/contact-us"><div class="n">Visit<span class="pct"> ↗</span></div><div class="lab">Come and speak to our team</div></a></div>
+ <div class="four-cols"><div class="col"><div class="h">Find us</div><div class="b">Unit G.04 West One<br>Europort Road<br>Gibraltar GX11 1AA</div></div><div class="col"><div class="h">Get in touch</div><div class="b"><a href="tel:+35020079520">+350 200 79520</a><br><a href="https://argus.gi/contact-us">Contact the team ↗</a><br><a href="https://argus.gi/request-quote">Request a quote ↗</a></div></div><div class="col"><div class="h">Explore</div><div class="b"><a href="#work">Our insurance</a><br><a href="https://argus.gi/forms-documents">Forms &amp; documents</a><br><a href="https://argus.gi/the-argus-group">The Argus Group</a></div></div><div class="col"><div class="h">Argus Gibraltar</div><div class="b">Personal and business insurance.<br>Underwriting and claims decisions<br>made here in Gibraltar.</div></div></div>
+ <div class="foot-bar"><span>Argus Gibraltar · Independent design study</span><a href="#hero">↑ Back to top</a><span>Our interest is you.</span></div>
+</footer>
+<script>
+(function(){
+  'use strict';
+  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // ===== 1. Mark loaded for hero clip-reveal =====
+  document.addEventListener('DOMContentLoaded', () => {
+    setTimeout(() => document.documentElement.classList.add('is-loaded'), 180);
+    // Wrap first-name letters for weight pulse
+    const fn = document.getElementById('first-name');
+    const text = 'Argus';
+    fn.innerHTML = text.split('').map((c,i)=>`<span style="--i:${i}">${c}</span>`).join('');
+  });
+
+  // ===== 2. Shared rAF state =====
+  let scrollY = window.scrollY, lastScrollY = scrollY;
+  let vel = 0;
+  let mx = window.innerWidth/2, my = window.innerHeight/2;
+  let ticking = false;
+  const W = () => window.innerWidth;
+
+  // refs
+  const root = document.documentElement;
+  const heroSec = document.getElementById('hero');
+  const firstName = document.getElementById('first-name');
+  const stackOuter = document.getElementById('stack-outer');
+  const panels = ['panel-A','panel-B','panel-C','panel-D'].map(id=>document.getElementById(id));
+  const emailEl = document.getElementById('email');
+  const emailWords = emailEl ? emailEl.querySelectorAll('[data-fill]') : [];
+  const preview = document.getElementById('preview');
+  const fragLis = document.querySelectorAll('#fragList li');
+
+  // ===== 3. rAF master loop =====
+  let t0 = performance.now();
+  function frame(t){
+    const dt = (t - t0) * 0.001;
+
+    // Hero pull-apart
+    const heroPull = Math.max(0, Math.min(60, scrollY * 0.06));
+    root.style.setProperty('--hero-pull', heroPull.toFixed(2));
+    root.style.setProperty('--scroll', scrollY);
+
+    // Hero weight pulse (per-letter)
+    if (firstName && !reducedMotion){
+      const letters = firstName.children;
+      for (let i=0; i<letters.length; i++){
+        const w = 250 + 350 * (0.5 + 0.5 * Math.sin(dt * 1.4 + i * 0.32));
+        letters[i].style.setProperty('--w', Math.round(w));
+        letters[i].style.fontVariationSettings = `'wght' ${Math.round(w)}, 'wdth' 100`;
+      }
+    }
+
+    // Marquee velocity decay
+    vel = vel * 0.86;
+    if (Math.abs(vel) < 0.001) vel = 0;
+    root.style.setProperty('--vel', Math.min(2.4, Math.abs(vel)).toFixed(3));
+
+    // Sticky stack progress -> per-panel transforms
+    if (stackOuter && window.innerWidth > 900){
+      const r = stackOuter.getBoundingClientRect();
+      const totalScroll = stackOuter.offsetHeight - window.innerHeight;
+      const p = Math.min(1, Math.max(0, -r.top / totalScroll)); // 0..1
+      // segments: A 0-0.25, B 0.25-0.5, C 0.5-0.75, D 0.75-1
+      for (let i=0; i<panels.length; i++){
+        const start = i * 0.25;
+        const localP = Math.min(1, Math.max(0, (p - start) / 0.25));
+        // Each panel's "next-panel arrival" pulls localP higher for previous
+        // For previous panel: as next arrives (localP of next > 0), this panel scales down
+        // Compute "next arrival" for previous panels
+      }
+      // For panel scale-down: each panel scales to 0.96 brightness 0.7 once the NEXT panel starts
+      for (let i=0; i<panels.length; i++){
+        const nextStart = (i+1) * 0.25;
+        const nextEnd = (i+1) * 0.25 + 0.18;
+        const out = Math.min(1, Math.max(0, (p - nextStart) / (nextEnd - nextStart)));
+        const pscale = 1 - out * 0.04;
+        const pbright = 1 - out * 0.30;
+        panels[i].style.setProperty('--pscale', pscale.toFixed(3));
+        panels[i].style.setProperty('--pbright', pbright.toFixed(3));
+        // Lock state: when this panel's segment is in view
+        const inSegStart = i * 0.25 - 0.05;
+        const inSegEnd = (i+1) * 0.25 + 0.05;
+        if (p >= inSegStart && p <= inSegEnd){
+          panels[i].classList.add('lock');
+        } else if (p > inSegEnd) {
+          panels[i].classList.add('lock'); // keep locked once revealed
+        } else {
+          panels[i].classList.remove('lock');
+        }
+        // Stroke-draw on panel D when in view
+        if (i === 3 && (p >= inSegStart - 0.02)){
+          panels[i].classList.add('in');
+        }
+        // Parallax inside panel A photo
+        if (i === 0){
+          const localP = Math.min(1, Math.max(0, (p - 0) / 0.25));
+          panels[i].style.setProperty('--p-A', localP.toFixed(3));
+        }
+      }
+    }
+
+    // Word-mask scroll fill on email
+    if (emailWords.length){
+      const er = emailEl.getBoundingClientRect();
+      const winH = window.innerHeight;
+      // fill progress as the email enters from bottom (er.top = winH) to leaves at center (er.top = winH*0.2)
+      const fp = Math.min(1, Math.max(0, 1 - (er.top - winH * 0.15) / (winH * 0.7)));
+      emailWords.forEach(w => {
+        const th = parseFloat(w.dataset.fill);
+        if (fp >= th){ w.classList.add('filled'); }
+        else { w.classList.remove('filled'); }
+      });
+    }
+
+    ticking = false;
+  }
+
+  window.addEventListener('scroll', () => {
+    scrollY = window.scrollY;
+    const delta = scrollY - lastScrollY;
+    lastScrollY = scrollY;
+    // velocity: clamp & accumulate
+    vel = Math.max(-3, Math.min(3, vel + delta * 0.012));
+    if (!ticking){
+      requestAnimationFrame(frame);
+      ticking = true;
+    }
+  }, { passive:true });
+
+  // continuous frame for hero pulse and decay
+  function tick(t){
+    if (!ticking){
+      frame(t);
+    }
+    requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+
+  // ===== Section 2 marquee: JS-driven transform (smooth, no duration-swap jumps) =====
+  (function(){
+    const rail1 = document.querySelector('.rail-1');
+    const rail2 = document.querySelector('.rail-2');
+    let x1 = 0, x2 = 0, h1 = 0, h2 = 0, last = performance.now();
+    function measure(){
+      if(rail1) h1 = rail1.scrollWidth / 2;
+      if(rail2){ h2 = rail2.scrollWidth / 2; if(x2 === 0) x2 = -h2; }
+    }
+    measure();
+    window.addEventListener('resize', measure, { passive:true });
+    window.addEventListener('load', measure);
+    (function loop(now){
+      const dt = Math.min(64, now - last); last = now;
+      if(!reducedMotion && rail1 && h1){ x1 -= (h1 / 38) * dt / 1000; if(x1 <= -h1) x1 += h1; rail1.style.transform = 'translateX(' + x1 + 'px)'; }
+      if(!reducedMotion && rail2 && h2){ x2 += (h2 / 28) * dt / 1000; if(x2 >= 0) x2 -= h2; rail2.style.transform = 'translateX(' + x2 + 'px)'; }
+      requestAnimationFrame(loop);
+    })(performance.now());
+  })();
+
+  // ===== 4. Mouse position -> preview =====
+  window.addEventListener('mousemove', (e)=>{
+    mx = e.clientX; my = e.clientY;
+    root.style.setProperty('--mx', mx + 'px');
+    root.style.setProperty('--my', my + 'px');
+  }, { passive:true });
+
+  // ===== 5. Cursor-tracked list preview =====
+  fragLis.forEach(li => {
+    li.addEventListener('mouseenter', () => {
+      const kind = li.dataset.preview;
+      if (kind === 'img'){
+        const src = li.dataset.src;
+        preview.innerHTML = `<img src="${src}" alt="" onerror="this.style.background='#173045';this.removeAttribute('src');">`;
+      } else {
+        const stamp = li.dataset.stamp || '';
+        preview.innerHTML = `<div class="type-preview"><div class="stamp-text">${stamp}</div></div>`;
+      }
+      preview.classList.add('active');
+    });
+    li.addEventListener('mouseleave', () => {
+      preview.classList.remove('active');
+    });
+  });
+
+  document.querySelectorAll('nav.tabs a[href^="#"]').forEach(a => a.addEventListener('click', () => {
+    document.querySelectorAll('nav.tabs a').forEach(n => n.classList.remove('active'));
+    a.classList.add('active');
+  }));
+  // ===== 6. IntersectionObserver: row entrance, section heading wind-up, stat-strip reveal =====
+  const io = new IntersectionObserver((entries)=>{
+    entries.forEach(e=>{
+      if (e.isIntersecting){
+        e.target.classList.add('in');
+      }
+    });
+  }, { threshold: 0.12, rootMargin: '0px 0px -8% 0px' });
+
+  fragLis.forEach((li, i) => {
+    li.style.transitionDelay = (i * 50) + 'ms';
+    io.observe(li);
+  });
+  document.querySelectorAll('.wind-up, .reveal-up, .stagger').forEach(el => io.observe(el));
+
+  // Safety fallback: any reveal element still hidden after 4s flips to .in
+  setTimeout(() => {
+    document.querySelectorAll('.frag-list li:not(.in), .wind-up:not(.in), .reveal-up:not(.in), .stagger:not(.in)').forEach(el => {
+      const r = el.getBoundingClientRect();
+      if (r.top < window.innerHeight && r.bottom > 0) el.classList.add('in');
+    });
+  }, 3500);
+
+})();
+</script>
+</body>
+</html>
